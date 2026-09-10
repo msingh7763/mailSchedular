@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  googleId     String?      @unique
+  email        String       @unique
+  name         String
+  avatar       String?
+  passwordHash String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  emails       Email[]
+  slackToken   SlackToken?
+
+  @@map("users")
+}
+
+model Email {
+  id                   String           @id @default(cuid())
+  userId               String
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject              String
+  body                 String           @db.Text
+  fromEmail            String
+  fromName             String
+  status               EmailStatus      @default(SCHEDULED)
+  scheduledAt          DateTime
+  sentAt               DateTime?
+  hourlyLimit          Int              @default(200)
+  delayBetweenEmails   Int              @default(2)
+  idempotencyKey       String           @unique
+  recipients           EmailRecipient[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("emails")
+}
+
+model EmailRecipient {
+  id        String          @id @default(cuid())
+  emailId   String
+  email     Email           @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  address   String
+  status    RecipientStatus @default(PENDING)
+  sentAt    DateTime?
+  error     String?
+  jobId     String?         @unique
+  createdAt DateTime        @default(now())
+
+  @@index([emailId])
+  @@map("email_recipients")
+}
+
+model SlackToken {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken String
+  teamId      String
+  teamName    String
+  webhookUrl  String?
+  channel     String?
+  botUserId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("slack_tokens")
+}
+
+enum EmailStatus {
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+  PARTIAL
+}
+
+enum RecipientStatus {
+  PENDING
+  SENT
+  FAILED
+  RATE_LIMITED
+}

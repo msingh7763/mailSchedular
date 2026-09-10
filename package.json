@@ -1,0 +1,17 @@
+{
+  "name": "outbox22",
+  "version": "1.0.0",
+  "description": "A production-grade email scheduling service + dashboard built for the ReachInbox intern assignment.",
+  "main": "send-emails.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "nodemailer": "^10.0.3"
+  }
+}
